@@ -1,0 +1,105 @@
+---
+title: "marbles"
+author: "Gavin Fay"
+date: "6/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+
+```{r get_data}
+tuesdata <- tidytuesdayR::tt_load('2020-06-02')
+marbles <- tuesdata$marbles
+```
+
+```{r look}
+marbles <- marbles %>% 
+  mutate(fast_slow = ifelse(time_s > 250, "slow", "fast")) %>%
+  filter(!is.na(fast_slow)) %>% 
+  mutate(time_per_lap = time_s/number_laps) %>% 
+  I()
+
+marbles %>% 
+  ggplot() +
+  aes(x = track_length_m, y = time_s, color = race) +
+  geom_point() +
+  facet_wrap(~fast_slow, scales = "free") +
+  NULL
+
+marbles %>% 
+  ggplot() +
+  aes(x = number_laps, y = time_s, col = track_length_m) +
+  geom_point() +
+  NULL
+
+marbles %>% 
+  ggplot() +
+  aes(x = number_laps, y = time_per_lap, col = track_length_m) +
+  geom_point() +
+  NULL
+```
+
+```{r}
+wins <- marbles %>% 
+  group_by(race) %>% 
+  # group_by(marble_name) %>% 
+  summarize(sum = sum(points)) %>% 
+  arrange(desc(points)) %>% 
+  filter(!is.na(points)) %>% 
+  slice(1) %>% 
+  ungroup() %>% 
+  # select(marble_name) %>% 
+  # count() %>% 
+  I()
+wins
+
+wins %>%
+  ggplot() +
+  # aes(x = time_s, y = points) +
+  aes(x = marble_name) +
+  geom_bar() +
+  # geom_point() +
+  # facet_wrap(~race) +
+  NULL
+
+```
+
+```{r}
+poles <- marbles %>% 
+  filter(!is.na(pole)) %>% 
+  select(site, marble_name, pole) 
+poles
+marbles_joined <- marbles %>% 
+  filter(!is.na(points)) %>% 
+  select(-pole) %>% 
+  left_join(poles) %>% 
+  mutate(pole = as.numeric(str_sub(pole, 2)))
+marbles_joined 
+
+marbles_summary <- marbles_joined %>% 
+  group_by(pole) %>% 
+  mutate(total_points = sum(points)) 
+
+marbles_summary %>% 
+  ggplot() +
+  aes(x = pole, y = total_points, fill = marble_name,
+      col = marble_name) +
+  geom_col() +
+  labs(x = "pole position",
+       y = "total points",
+       title = "Pole position matters for marbles",
+       subtitle = "but better to come 2nd in qualifiers!",
+       caption = "plot by G. Fay, B. Longworth, A. Novak",
+       fill = "marble") +
+  theme_minimal() +
+  scale_fill_viridis_d() +
+  scale_color_viridis_d() +
+  guides(color = FALSE)
+
+```
+
