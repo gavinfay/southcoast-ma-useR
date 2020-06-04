@@ -94,12 +94,13 @@ marbles_summary %>%
        y = "total points",
        title = "Pole position matters for marbles",
        subtitle = "but better to come 2nd in qualifiers!",
-       caption = "plot by G. Fay, B. Longworth, A. Novak",
+       caption = "\n@gavin_fay, B. Longworth, A. Novak\ndata from Jelle's Marble Runs",
        fill = "marble") +
   theme_minimal() +
+  theme(text = element_text(family = "Rockwell")) +
   scale_fill_viridis_d() +
   scale_color_viridis_d() +
-  guides(color = FALSE)
-
+  guides(color = FALSE) +
+  NULL
 ```
 
